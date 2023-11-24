@@ -7,6 +7,7 @@ import json
 import subprocess
 import time
 import os
+import random
 
 
 @timeit
@@ -70,6 +71,7 @@ def generateBenchmarkId(player_id, random_hash, algorithm_id, challenge_id, diff
 
 @timeit
 def generateRuntimeSignature(seed: int, func, *args, **kwargs):
+    random.seed(seed)
     import numpy as np
     d = AttrDict(
         signature=seed,
@@ -85,26 +87,19 @@ def generateRuntimeSignature(seed: int, func, *args, **kwargs):
 
     def traceOpcodes(frame, event, args):
         if d.next_update == d.event_count:
-            k = list(frame.f_locals)[d.signature % len(frame.f_locals)]
+            k = random.choice(list(frame.f_locals))
             d.signature *= (randInt(frame.f_locals[k]) or 1) * (randInt(k) or 1)
             d.signature >>= max(0, d.signature.bit_length() - 32)              
-            d.next_update += 100 + d.signature % 256
+            d.next_update += 500 + d.signature % 1024
         d.event_count += 1
 
     def randInt(o):
         if isinstance(o, bytes):
-            if len(o) == 0:
-                return 0
-            idx = d.signature % len(o)
-            idx = min(idx - 2, 0)
-            v = int.from_bytes(o[idx:idx + 2], byteorder='big' if d.signature % 2 else 'little')
-            return (v >> (d.signature % 8)) % 256
-        elif isinstance(o, (str, int, float, bool)):
+            return random.choice(o) if len(o) else 0
+        elif isinstance(o, (str, int, float, bool)) or np.isscalar(o):
             return randInt(str(o).encode())
-        elif np.isscalar(o):
-            return randInt(o.tobytes())
         elif isinstance(o, (list, tuple, np.ndarray)):
-            return len(o) and randInt(o[d.signature % len(o)])
+            return len(o) and randInt(random.choice(o))
         else:
             return 0
 
