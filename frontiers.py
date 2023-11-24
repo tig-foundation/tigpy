@@ -50,11 +50,11 @@ def randomDifficultyOnFrontier(points: List[FrontierPoint], difficulty_parameter
     difficulties = set(tuple(p.difficulty) for p in points)
     # Add points right on the bounds so we can interpolate across the full x and y range
     if not any(d[0] == min_difficulty[0] for d in difficulties):
-        difficulties.add((min_difficulty[0], max_difficulty[0] + 1))
-        max_difficulty[0] += 1
-    if not any(d[1] == min_difficulty[1] for d in difficulties):
-        difficulties.add((max_difficulty[1] + 1, min_difficulty[1]))
+        difficulties.add((min_difficulty[0], max_difficulty[1] + 1))
         max_difficulty[1] += 1
+    if not any(d[1] == min_difficulty[1] for d in difficulties):
+        difficulties.add((max_difficulty[0] + 1, min_difficulty[1]))
+        max_difficulty[0] += 1
     
     # Interpolate a random x, y point
     if len(difficulties) == 1:
