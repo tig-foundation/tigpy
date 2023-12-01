@@ -151,6 +151,7 @@ class BenchmarkData:
     compute_times: List[int]
     solution_ids: List[int]
     proofs: List[Proof]
+    rejection_reason: str
 
 @dataclass
 class FrontierPoint:
