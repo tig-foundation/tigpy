@@ -128,7 +128,7 @@ class API:
         challenge_id: str,
         difficulty: List[int],
         nonces: List[int],
-        solution_ids: List[int],
+        solution_signatures: List[int],
         compute_times: List[int],
     ) -> SubmitBenchmarkResp:
         return await self._call(
@@ -141,7 +141,7 @@ class API:
                 challenge_id=challenge_id,
                 difficulty=difficulty,
                 nonces=nonces,
-                solution_ids=solution_ids,
+                solution_signatures=solution_signatures,
                 compute_times=compute_times,
             )
         )

@@ -16,11 +16,14 @@ def challengeCodeURL(repo_url, branch, challenge_id):
     
 @timeit
 def algorithmCodeURL(repo_url, branch, challenge_id, algorithm_id):
-    algo_branch = algorithmBranch(branch, challenge_id, algorithm_id) if algorithm_id != "default" else branch
+    algo_branch = algorithmBranch(branch, challenge_id, algorithm_id)
     return repo_url.replace("github.com", "raw.githubusercontent.com").replace("challenges.git", f"challenges/{algo_branch}/{challenge_id}/algorithms/{algorithm_id}.py")
 
 def algorithmBranch(branch, challenge_id, algorithm_id):
-    return f"{branch}_{challenge_id}_{algorithm_id}"
+    if branch == "main":
+        return f"{challenge_id}_{algorithm_id}"
+    else:
+        return f"{branch}_{challenge_id}_{algorithm_id}"
 
 def setupChallengeModule(challenge_id, challenge_code):
     os.makedirs(challenge_id, exist_ok=True)
@@ -55,10 +58,10 @@ def generateSeed(player_id, random_hash, algorithm_id, challenge_id, difficulty,
         nonce=nonce
     )))
 
-def generateSolutionId(nonce, solution_base64, runtime_signature):
+def generateSolutionSignature(nonce, solution_base64, runtime_signature):
     return md5Seed(f"{nonce},{solution_base64},{runtime_signature}")
 
-def generateBenchmarkId(player_id, random_hash, algorithm_id, challenge_id, difficulty, nonces, solution_ids) -> str:
+def generateBenchmarkId(player_id, random_hash, algorithm_id, challenge_id, difficulty, nonces, solution_signatures) -> str:
     return md5Hex(minJsonDump(dict(
         player_id=player_id,
         random_hash=random_hash,
@@ -66,7 +69,7 @@ def generateBenchmarkId(player_id, random_hash, algorithm_id, challenge_id, diff
         challenge_id=challenge_id,
         difficulty=difficulty,
         nonces=nonces,
-        solution_ids=solution_ids
+        solution_signatures=solution_signatures
     )))
 
 @timeit
@@ -181,6 +184,6 @@ def sampleNonces(block, benchmark):
         for idx in np.random.choice(
             n, 
             replace=False,
-            size=min(n, block.config.verification.num_samples)
+            size=min(n, block.config.benchmark_submissions.max_samples)
         )
     ]
