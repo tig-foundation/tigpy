@@ -43,9 +43,9 @@ class BaseBenchmarker:
         Challenge = modules.challenge_module.Challenge
         Difficulty = modules.challenge_module.Difficulty
         solveChallenge = modules.algorithm_module.solveChallenge
-        divisor = data.block.config.preimage_threshold.max
+        divisor = data.block.config.solution_signature_threshold.max_value
         preimage_threshold = next(
-            c.preimage_threshold
+            c.solution_signature_threshold
             for c in data.block.config.challenges
             if c.id == params.challenge_id
         )
@@ -74,19 +74,19 @@ class BaseBenchmarker:
                 await self._onWorkerSolution(worker_id, nonce)
                 await asyncio.sleep(0)
                 solution_base64 = base64Encode(minJsonDump(solution))
-                solution_id = generateSolutionId(
+                solution_signature = generateSolutionSignature(
                     nonce, 
                     solution_base64=solution_base64, 
                     runtime_signature=runtime_signature
                 )
-                if solution_id % divisor > preimage_threshold:
+                if solution_signature % divisor > preimage_threshold:
                     continue
                 await self._onWorkerSolutionId(worker_id, nonce)
                 p = Proof(
                     nonce=nonce,
                     runtime_signature=runtime_signature,
                     solution_base64=solution_base64,
-                    solution_id=solution_id,
+                    solution_signature=solution_signature,
                 )
                 p.compute_time = int((datetime.now() - start).total_seconds() * 1000)
                 proofs.append(p)
@@ -206,7 +206,7 @@ class BaseBenchmarker:
             challenge_id=params.challenge_id,
             difficulty=params.difficulty,
             nonces=[p.nonce for p in proofs],
-            solution_ids=[p.solution_id for p in proofs],
+            solution_signatures=[p.solution_signature for p in proofs],
             compute_times=[p.compute_time for p in proofs],
         )
     

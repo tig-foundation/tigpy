@@ -36,81 +36,99 @@ class ERC20Config:
     minter_address: str
 
 @dataclass
-class QualifiersConfig: 
-    num_cutoff: int
-    lifespan: int
-
-@dataclass
-class VerificationConfig:
-    period_multiplier: int
-    num_samples: int
-    max_seconds_to_verify: int
-    stderr_max_bytes: int
+class BenchmarkSubmissionsConfig:
+    submission_delay_multiplier: int
+    max_samples: int
     max_confirmations_per_block: int
     max_mempool_size: int
-    max_submissions_per_player_per_block: int
+    lifespan_period: int
 
 @dataclass
-class PreImageThresholdConfig:
-    min: int
-    max: int
+class SolutionSignatureThresholdConfig:
+    min_value: int
+    max_value: int
     min_delta: int
     max_delta: int
-    update_delay: int
-    gain: int
-    update_window: int
+    rolling_average_lag_period: int
+    rolling_average_window: int
     target_solutions_rate: int
+    target_error_multiplier: int
+
+@dataclass
+class CutoffConfig:
+    avg_solutions_multiplier: float
+
+@dataclass
+class DifficultyFrontiersConfig:
+    num_qualifiers_threshold: int
+    max_difficulty_multiplier: float
+
+@dataclass
+class OptimisableProofOfWorkConfig:
+    imbalance_multiplier: float
 
 @dataclass
 class BlocksConfig:
-    num_per_round: int
-    seconds_interval: int
+    blocks_per_round: int
+    seconds_between_blocks: float
+
+@dataclass
+class AlgorithmSubmissionsConfig:
+    submission_fee: int
+    burn_address: str
+    adoption_threshold: float
+    merge_points_threshold: int
+    push_delay: int
+    git_branch: str
+    git_repo: str
+
+@dataclass
+class VerificationConfig:
+    max_seconds: int
+    max_memory: int
+    stderr_max_bytes: int
 
 @dataclass
 class EmissionsConfig:
-    rate: float
+    block_reward: float
     round_start: int
 
 @dataclass
 class DistributionConfig:
     benchmarkers: float
     innovators: float
+    implementations: float
+    breakthroughs: float
 
 @dataclass
 class RewardsConfig:
     distribution: DistributionConfig
-    imbalance_penalty_factor: float
     schedule: List[EmissionsConfig]
 
 @dataclass
-class AlgorithmSubmissionsConfig:
-    adoption_threshold_to_point: float
-    submission_fee: int
-    min_points_to_merge: int
-    push_delay: int
-    git_branch: str
-    git_repo: str
-
-
-@dataclass
-class DifficultyParamConfig:
+class DifficultyParameterConfig:
     name: str
-    min: int
-    max: int
+    min_value: int
+    max_value: int
 
 @dataclass
 class ChallengeConfig:
     id: str
-    difficulty_params: List[DifficultyParamConfig]
-    preimage_threshold: int
+    difficulty_parameters: List[DifficultyParameterConfig]
+    solution_signature_threshold: int
+    round_start: int = 1 # new
+    weight: int = 1 # new
     solutions_rate: float = 0
 
 @dataclass
 class Config:
     erc20: ERC20Config
-    qualifiers: QualifiersConfig
+    benchmark_submissions: BenchmarkSubmissionsConfig
+    solution_signature_threshold: SolutionSignatureThresholdConfig
+    cutoff: CutoffConfig
+    difficulty_frontiers: DifficultyFrontiersConfig
+    optimisable_proof_of_work: OptimisableProofOfWorkConfig
     verification: VerificationConfig
-    preimage_threshold: PreImageThresholdConfig
     blocks: BlocksConfig
     rewards: RewardsConfig
     algorithm_submissions: AlgorithmSubmissionsConfig
@@ -119,9 +137,9 @@ class Config:
 @dataclass
 class Proof:
     nonce: int
-    runtime_signature: int
-    solution_id: int
     solution_base64: str
+    runtime_signature: int
+    solution_signature: int
 
 @dataclass
 class Benchmark:
@@ -136,6 +154,7 @@ class Benchmark:
     block_active: int
     sampled_nonces: List[int]
     num_solutions: int
+    num_qualifiers: int
     rejected: bool
     innovator_latest_reward: int
     benchmarker_latest_reward: int
@@ -149,7 +168,7 @@ class Benchmark:
 class BenchmarkData:
     nonces: List[int]
     compute_times: List[int]
-    solution_ids: List[int]
+    solution_signatures: List[int]
     proofs: List[Proof]
     rejection_reason: str
 
@@ -159,6 +178,7 @@ class FrontierPoint:
     frontier_idx: int
     difficulty: List[int]
     num_solutions: int
+    num_qualifiers: int
 
 @dataclass
 class Algorithm:
@@ -186,8 +206,13 @@ class Player:
     innovator_round_reward: int
     benchmarker_latest_reward: int
     innovator_latest_reward: int
+    num_solutions: Dict[str, float]
+    qualifiers_cutoff: int
+    num_qualifiers: Dict[str, float]
     percent_qualifiers: Dict[str, float]
-    modifiers: dict
+    avg_percent_qualifiers: float
+    std_percent_qualifiers: float
+    imbalance: float
     weight: int
 
 @dataclass
@@ -239,7 +264,7 @@ class SubmitBenchmarkReq:
     challenge_id: str
     difficulty: List[int]
     nonces: List[int]
-    solution_ids: List[int]
+    solution_signatures: List[int]
     compute_times: List[int]
 
 @dataclass
