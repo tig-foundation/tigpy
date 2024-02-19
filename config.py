@@ -84,7 +84,7 @@ V1 = Config(
       ]
     ),
     algorithm_submissions=AlgorithmSubmissionsConfig(
-        submission_fee=5000000000000000,
+        submission_fee=1000000000000000,
         burn_address="0x0000000000000000000000000000000000000000",
         adoption_threshold=0.25,
         merge_points_threshold=5040,

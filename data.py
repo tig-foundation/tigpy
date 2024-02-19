@@ -285,6 +285,7 @@ class SubmitAlgorithmResp:
 class RequestAPIKeyReq:
     signature: str
     address: str
+    is_gnosis_safe: bool
 
 @dataclass
 class RequestAPIKeyResp:
